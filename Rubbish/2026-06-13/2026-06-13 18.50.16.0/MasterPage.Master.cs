@@ -1,0 +1,207 @@
+﻿using FiftyOne;
+using Saat.App_Code;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace Saat
+{
+    public partial class MasterPage : System.Web.UI.MasterPage
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            MagazaYardimcisi.OturumIdAl(Context);
+            UyeOturumKontrol();
+            SiteSabitlerini();
+            KuponGetir();
+            IletisimGetir();
+            UrunListele();
+            SepetOzetGoster();
+            UyeMenuGoster();
+        }
+
+        private void UyeOturumKontrol()
+        {
+            if (MusteriAuth.GirisMi(Session)) return;
+            int mid = MusteriAuth.HatirlaDogrula(Request);
+            if (mid <= 0) return;
+            MusteriAuth.OturumAc(Session, mid, MusteriAuth.AdSoyadAl(mid));
+            SepetHelper.MisafirSepetiMerge(Context, mid);
+        }
+
+        private void UyeMenuGoster()
+        {
+            if (MusteriAuth.GirisMi(Session))
+            {
+                string ad = Server.HtmlEncode(MusteriAuth.MusteriAdSoyad(Session));
+                ltrUyeMenu.Text =
+                    "<div class=\"user-info dropdown header-top__dropdown\">" +
+                    "<a class=\"dropdown-toggle\" id=\"userID\" data-bs-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">" +
+                    ad + " <i class=\"fa fa-angle-down\"></i></a>" +
+                    "<div class=\"dropdown-menu\" aria-labelledby=\"userID\">" +
+                    "<a class=\"dropdown-item\" href=\"/hesabim\">Hesabım</a>" +
+                    "<a class=\"dropdown-item\" href=\"/hesabim#siparisler\">Siparişlerim</a>" +
+                    "<a class=\"dropdown-item\" href=\"/uye-cikis\">Çıkış</a>" +
+                    "</div></div>";
+            }
+            else
+            {
+                ltrUyeMenu.Text =
+                    "<a href=\"/uye-giris\" class=\"me-2\">Giriş</a>" +
+                    "<a href=\"/uye-kayit\">Kayıt</a>";
+            }
+        }
+
+        protected void SepetOzetGoster()
+        {
+            int adet = SepetHelper.ToplamAdet(Context);
+            ltrMiniSepet.Text = string.Format(
+                "<a href=\"/sepet\" class=\"bordered-icon\" title=\"Sepet\"><span class=\"mini-cart__count\">{0}</span><i class=\"icon_cart_alt\"></i></a>",
+                adet);
+        }
+
+        protected void SiteSabitlerini() 
+        {
+        BaglantiBilgileri b = new BaglantiBilgileri ();
+
+        SqlCommand com = new SqlCommand ("select Resim,sitebaslik from sitesabitleri where ID=@ID", b.Baglanti);
+
+            com.Parameters.AddWithValue("@ID","1");
+
+            if (com.Connection.State == System.Data.ConnectionState.Closed) 
+            {
+
+            b.Baglanti.Open ();
+
+            }
+
+            SqlDataReader dr=com.ExecuteReader();
+
+            if (dr.Read()) 
+            {
+                string baslik = HttpUtility.HtmlEncode(dr["sitebaslik"].ToString());
+                string resim = dr["Resim"].ToString();
+                Page.Title = baslik + " - Online Saat Mağazası";
+                ltrLogo.Text = string.Format(
+                    "<a href=\"/anasayfa\" class=\"saat-logo-link\" title=\"{0}\"><img src=\"/upload/{1}\" alt=\"{0}\" class=\"saat-logo\" /></a>",
+                    baslik, resim);
+            }
+
+            dr.Close ();
+            b.Baglanti.Close ();
+
+        }
+
+        protected void KuponGetir()
+        {
+            BaglantiBilgileri b = new BaglantiBilgileri();
+
+            SqlCommand com = new SqlCommand("select KuponKodu from Kupon where  Aktif=@Aktif", b.Baglanti);
+
+            com.Parameters.AddWithValue("@Aktif", true);
+
+            if (com.Connection.State == System.Data.ConnectionState.Closed)
+            {
+                b.Baglanti.Open();
+            }
+
+            SqlDataReader dr = com.ExecuteReader();
+
+            if (dr.Read())
+            {
+                ltrKuponadi.Text = dr["KuponKodu"].ToString();
+            }
+
+            dr.Close ();
+            b.Baglanti.Close();
+
+
+        }
+
+        protected void IletisimGetir()
+        {
+            BaglantiBilgileri b = new BaglantiBilgileri();
+
+            SqlCommand com = new SqlCommand("select telefon1,twitter,facebook,linkedin,instagram,adres,mailadresi, telefon1,telefon2 from iletisim where  ID=@ID", b.Baglanti);
+
+            com.Parameters.AddWithValue("@ID", 1);
+
+            if (com.Connection.State == System.Data.ConnectionState.Closed)
+            {
+                b.Baglanti.Open();
+            }
+
+            SqlDataReader dr = com.ExecuteReader();
+
+            if (dr.Read())
+            {
+                ltrTelefon1.Text = "<a href='tel:" + dr["telefon1"] + "'>" + dr["telefon1"] + "</a>";
+                ltrTwitter.Text = SosyalLink(dr["twitter"], "fa-twitter", "twitter");
+                ltrFacebook.Text = SosyalLink(dr["facebook"], "fa-facebook", "facebook");
+                ltrLinkedin.Text = SosyalLink(dr["linkedin"], "fa-linkedin", "linkedin");
+                ltrInstagram.Text = SosyalLink(dr["instagram"], "fa-instagram", "instagram");
+                ltrTwitter2.Text = SosyalLink(dr["twitter"], "fa-twitter", "twitter");
+                ltrFacebook2.Text = SosyalLink(dr["facebook"], "fa-facebook", "facebook");
+                ltrLinkedin2.Text = SosyalLink(dr["linkedin"], "fa-linkedin", "linkedin");
+                ltrInstagram2.Text = SosyalLink(dr["instagram"], "fa-instagram", "instagram");
+                ltrAdres.Text = dr["adres"].ToString(); 
+                ltrMailAdresi.Text = dr["mailadresi"].ToString(); 
+                ltrTelefon11.Text = dr["telefon1"].ToString();
+                ltrTelefon22.Text = dr["telefon2"].ToString();
+            }
+
+            dr.Close();
+            b.Baglanti.Close();
+
+
+        }
+
+        protected void UrunListele()
+        {
+            BaglantiBilgileri b = new BaglantiBilgileri();
+
+            SqlCommand com = new SqlCommand(
+                "SELECT TOP(5) ID, UrunAdi FROM urun WHERE aktif=@aktif  ORDER BY siralama",
+                b.Baglanti);
+
+            com.Parameters.AddWithValue("@aktif", true);
+
+            if (com.Connection.State == System.Data.ConnectionState.Closed) b.Baglanti.Open();
+
+            SqlDataReader dr = com.ExecuteReader();
+
+            if (dr.HasRows)
+            {
+                DataTable dt = new DataTable(); dt.Load(dr);
+                rptUrunListele.DataSource = dt; rptUrunListele.DataBind();
+
+            }
+            else 
+            { 
+                dr.Close();
+            }
+
+            b.Baglanti.Close();
+        }
+
+        public string UrunLink(object id, object ad)
+        {
+            if (id == null || ad == null) return "/urunler";
+            return string.Format("/urundetay/{0}/{1}", id, UrunSeoSlug.Olustur(ad.ToString()));
+        }
+
+        private static string SosyalLink(object url, string faIcon, string markaSinifi)
+        {
+            string adres = url == null || url == DBNull.Value ? "" : url.ToString().Trim();
+            if (string.IsNullOrEmpty(adres) || adres == "#") return "";
+            return string.Format(
+                "<a href=\"{0}\" class=\"social__link {1}\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"{1}\"><i class=\"fa {2}\"></i></a>",
+                HttpUtility.HtmlAttributeEncode(adres), markaSinifi, faIcon);
+        }
+    }
+}

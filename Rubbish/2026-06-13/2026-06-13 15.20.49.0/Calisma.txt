@@ -1,0 +1,279 @@
+================================================================================
+SAAT E-TİCARET — ÜNİVERSİTE PROJE PLANI (HIZLI & BASİT)
+Tarih: 13.06.2026
+Amaç: Localhost'ta çalışan demo; internete yayın YOK; üniversiteye teslim
+================================================================================
+
+PROJE KAPSAMI (Ne teslim edilecek?)
+-----------------------------------
+Online saat mağazası demosu:
+  · Ziyaretçi: ürün gezer → sepete ekler → sahte ödeme → "sipariş tamamlandı"
+  · Admin (Saat0604): ürün/sipariş yönetimi (zaten büyük ölçüde hazır)
+  · Ek özellik: basit "Size Öneriyoruz" (baktığı markaya göre öneri)
+  · Mevcut sayfalar: ana sayfa, blog, hakkımızda, iletişim
+
+Teknik: ASP.NET Web Forms 4.8 + ADO.NET + SQL Server + Mirora teması
+Çalıştırma: Visual Studio → F5 / IIS Express (localhost:61529)
+
+
+================================================================================
+DEVRE DIŞI / YAPILMAYACAK (Güvenlik & canlı yayın — bilinçli olarak atlanıyor)
+================================================================================
+
+  ✗ PayTR / gerçek ödeme / PayTRCallback sayfaları
+  ✗ ReCaptcha (iletişim formu doğrudan kayıt)
+  ✗ HTTPS, SSL, requireSSL, connection string şifreleme
+  ✗ KVKK / çerez onay popup
+  ✗ Canlı IIS yayını, domain, firewall ayarları
+  ✗ Web.config URL güvenlik filtreleri (denyUrlSequences — gerekirse gevşet)
+  ✗ Şifre hash karmaşıklığı zorunluluğu (MusteriAuth varsa kullanılır; yoksa düz Session yeterli)
+  ✗ Kurumsal statik sayfalar (teslimat, gizlilik, misyon, vizyon, kampanya, SSS, iade…)
+  ✗ Sipariş takip sayfası (misafir sorgulama)
+  ✗ Para birimi (USD/EUR) — sadece TL
+  ✗ Favori / wishlist
+  ✗ SEO meta, Google Analytics, yorum sistemi
+  ✗ DataTable.js ağır filtreler — basit Repeater yeterli
+  ✗ 404 özel sayfa (hata mesajı görünsün yeter — customErrors Off)
+  ✗ Mobil responsive detay testi (temel görünüm yeterli)
+  ✗ RouteConfig birleştirme — Global.asax'a sadece gerekli route'lar eklenir
+
+
+================================================================================
+MEVCUT DURUM
+================================================================================
+
+HAZIR:
+  [✓] Admin panel Saat0604/
+  [✓] Default, Blog, Hakkimizda, Iletisim
+  [✓] Faz 1: route + MasterPage linkleri (13.06.2026)
+  [✓] Faz 2-3: Urunler, UrunDetay, Sepet, Odeme, OdemeOde, OdemeBasarili, SiparisHelper
+  [✓] Faz 4: öneri sistemi (VeritabaniKurulum otomatik — F5 yeterli)
+  [✓] Faz 5: BlogDetay, Default hover/link, İletişim formu
+
+İSTEĞE BAĞLI (zaman kalırsa):
+  [ ] UyeGiris / UyeKayit (misafir alışveriş yeterli — üyelik opsiyonel)
+  [ ] BlogDetay cilası
+  [ ] Ana sayfa hover resim bug
+
+
+================================================================================
+FAZ 1 — MINIMUM ALTYAPI (yarım gün)
+================================================================================
+
+1.1 MasterPage link düzeltmesi
+  [ ] cart.html, login-register.html vb. statik linkler → /sepet, /urunler
+  [ ] Footer'daki olmayan sayfa linklerini kaldır veya /hakkimizda / /iletisim'e yönlendir
+  [ ] Menü: /urunler (Urunlerimiz yazıyorsa düzelt)
+
+1.2 Global.asax — sadece demo route'ları
+  [ ] urunler → Urunler.aspx
+  [ ] urundetay/{id}/{baslik} → UrunDetay.aspx
+  [ ] sepet, odeme, odeme-ode, odeme-basarili
+  [ ] Mevcut blog/hakkimizda/iletisim route'ları kalsın
+
+1.3 Web.config — demo modu
+  [ ] customErrors mode="Off" (Notlar.txt — hata görmek için)
+  [ ] Güvenlik bölümüne dokunma zorunlu değil; sorun çıkarsa denyUrlSequences kaldırılır
+
+1.4 Veritabanı (minimum)
+  [✓] UrunIlgiLog + IncelemeSayisi — VeritabaniKurulum.cs (Application_Start, otomatik)
+
+
+================================================================================
+FAZ 2 — ÜRÜN GEZİNTİSİ (1 gün)
+================================================================================
+
+Referans: Hazirlik/Tasarim/mirora/shop.html, product-details.html
+
+2.1 Urunler.aspx
+  [ ] Repeater ile aktif ürün listesi (GridView YOK)
+  [ ] Resim, marka, ad, fiyat (TL)
+  [ ] Linke tıkla → UrunDetay
+  [ ] Basit marka dropdown filtresi (opsiyonel — zaman yoksa tüm liste)
+
+2.2 UrunDetay.aspx
+  [ ] Ürün bilgisi + ana resim
+  [ ] "Sepete Ekle" butonu → SepetHelper.Ekle
+  [✓] IncelemeSayisi +1 (UrunDetay — otomatik kolon VeritabaniKurulum)
+  [✓] IlgiTakipHelper: Goruntuleme kaydı
+
+
+================================================================================
+FAZ 3 — SEPET & SAHTE ÖDEME (1 gün) — PROJENİN ANA AKIŞI
+================================================================================
+
+Referans: cart.html, checkout.html
+
+3.1 Sepet.aspx
+  [ ] SepetHelper ile listele
+  [ ] Adet güncelle / satır sil
+  [ ] "Ödemeye Geç" → Odeme.aspx
+
+3.2 Odeme.aspx
+  [ ] Ad, soyad, telefon, adres, e-posta (basit TextBox — validasyon minimum)
+  [ ] Sepet özeti + toplam
+  [ ] "Devam Et" → OdemeOde.aspx
+
+3.3 OdemeOde.aspx — SON ÖDEME (sahte / fake)
+  [ ] Tutar özeti
+  [ ] ÖDEME YÖNTEMİ SEÇİMİ (RadioButtonList veya kart görünümlü seçenekler):
+      · Kapıda Ödeme
+      · EFT / Havale
+      · Kredi Kartı
+  [ ] Seçime göre sahte alt alan (görsel amaçlı — gerçek işlem YOK):
+      - Kapıda Ödeme  → kısa bilgi metni ("Teslimatta nakit/kart")
+      - EFT           → sahte IBAN + açıklama kutusu (sabit demo metin)
+      - Kredi Kartı   → sahte kart no / son kullanma / CVV alanları (doğrulama yok)
+  [ ] Tek buton: "Siparişi Onayla" veya "Ödemeyi Tamamla"
+  [ ] Tıklanınca SiparisHelper:
+      - Siparis + SiparisDetay INSERT
+      - OdemeYontemi = seçilen yöntem (KapidaOdeme | EFT | KrediKarti)
+      - OdemeDurumu = "OdemeAlindi" (hepsi fake — EFT/kart için de anında onay)
+      - Sepeti temizle
+      - IlgiTakipHelper SatinAlma (Faz 4)
+  [ ] Redirect → OdemeBasarili.aspx?siparis=XXX&yontem=...
+
+3.4 OdemeBasarili.aspx
+  [ ] "Siparişiniz tamamlanmıştır" + sipariş no
+  [ ] Seçilen ödeme yöntemi metni (örn. "Ödeme yöntemi: Kapıda Ödeme")
+  [ ] Yönteme göre kısa bilgi:
+      - Kapıda → "Kargonuz geldiğinde ödeme yapabilirsiniz"
+      - EFT    → "Demo: Ödemeniz alınmış sayıldı" (fake)
+      - Kart   → "Demo: Kart ödemeniz onaylandı" (fake)
+  [ ] Ana sayfaya dön linki
+
+3.5 SiparisHelper.cs (App_Code)
+  [ ] SahteOdemeTamamla(ctx, adresBilgileri, odemeYontemi) → siparisNo döndür
+  [ ] Siparis tablosuna OdemeYontemi kolonu yaz (kolon yoksa ALTER veya mevcut alan kullan)
+  [ ] Admin SiparisListe / SiparisDetay'da ödeme yöntemi görünsün (demo kanıtı)
+
+
+================================================================================
+FAZ 4 — BASİT ÖNERİ SİSTEMİ (yarım gün) — PROJE RAPORU İÇİN
+================================================================================
+
+Amaç: "Yapay zeka mantığında tavsiye" — aslında basit marka puanı (API yok)
+
+Tablo UrunIlgiLog:
+  ID, OturumId, UrunId, OlayTipi, Puan, Tarih
+  (MusteriId opsiyonel — üyelik yoksa sadece cookie OturumId)
+
+Puan: görüntüleme=1, sepet=3, satın alma=5
+
+IlgiTakipHelper.cs + OneriMotoru.cs:
+  [ ] Son olaylardan en çok puan alan markayı bul
+  [ ] Aynı markadan 6 ürün öner; yoksa vitrin ürünleri
+
+UI:
+  [ ] Default.aspx altında "Size Öneriyoruz" Repeater (ayrı ascx şart değil — inline da olur)
+  [ ] UrunDetay.aspx altında 4 ürün öner
+
+
+================================================================================
+FAZ 5 — MEVCUT SAYFA CİLASI (zaman kalırsa)
+================================================================================
+
+5.1 BlogDetay.aspx (Notlar.txt — kaldığımız yer)
+  [✓] ltrResim fazladan </a> düzelt
+  [✓] İlgili yazılarda mevcut ID hariç
+  [✓] Dummy yorum/sidebar kaldırıldı
+
+5.2 Default.aspx
+  [✓] En çok görüntülenen hover resim bug (secondary-image)
+  [✓] Blog link typo düzeltildi (BlogLink helper)
+  [✓] Sepete ekle linkleri → ürün detay
+
+5.3 Iletisim.aspx
+  [✓] Form → gelenler tablosuna INSERT (ReCaptcha YOK)
+
+
+================================================================================
+FAZ 6 — ÜYELİK (OPSİYONEL — demo misafir akışı yeterli)
+================================================================================
+
+Üniversite demosu için misafir alışveriş + sahte ödeme yeterli.
+Hoca "üye girişi" isterse:
+  [ ] UyeGiris.aspx + UyeKayit.aspx (MusteriAuth — hazır helper)
+  [ ] UyeCikis.aspx
+Hesabim, sipariş geçmişi, profil düzenleme → YAPILMAZ (zaman kazanmak için)
+
+
+================================================================================
+FAZ 7 — ADMIN DEMO KONTROL LİSTESİ (sunum günü)
+================================================================================
+
+Sunumda gösterilecek admin ekranları:
+  [ ] Saat0604/Anasayfa — giriş
+  [ ] UrunListe / UrunEkle
+  [ ] SiparisListe — sahte ödeme sonrası sipariş görünsün
+  [ ] Slider, Blog (içerik varsa)
+
+Admin tarafına dokunmaya gerek yok — çalıştığından emin ol yeter.
+
+
+================================================================================
+FAZ 8 — SUNUM ÖNCESİ TEST (30 dk)
+================================================================================
+
+Tek senaryo — hoca önünde bu akış:
+  1. Ana sayfa açılır (slider + vitrin)
+  2. Ürünler → bir saat detayı
+  3. Sepete ekle → sepet
+  4. Ödeme → Son ödeme sayfasında yöntem seç (Kapıda / EFT / Kart) → Onayla
+  5. "Siparişiniz tamamlanmıştır" (+ seçilen yöntem mesajı)
+  6. Admin → SiparisListe'de sipariş görünür
+  7. (Bonus) 2-3 saat gez → ana sayfada "Size Öneriyoruz" değişsin
+
+  [ ] Rebuild Solution
+  [ ] F5 ile localhost'ta test
+
+
+================================================================================
+ÖNCELİK SIRASI (Kesin — buna uy)
+================================================================================
+
+  1. Faz 1   — link + route düzeltme (yarım gün)
+  2. Faz 2   — Urunler + UrunDetay (1 gün)
+  3. Faz 3   — Sepet + sahte ödeme + SiparisHelper (1 gün)  ← EN ÖNEMLİ
+  4. Faz 4   — basit öneri sistemi (yarım gün)
+  5. Faz 5   — BlogDetay + küçük buglar (zaman kalırsa)
+  6. Faz 6   — üyelik (sadece hoca isterse)
+  7. Faz 7-8 — admin kontrol + sunum provası
+
+
+================================================================================
+TAHMINİ SÜRE
+================================================================================
+
+  Minimum çalışan demo (Faz 1-3):     ~2-2.5 gün
+  Öneri sistemi dahil (Faz 1-4):      ~3 gün
+  Cila + blog (Faz 1-5):             ~3.5 gün
+
+
+================================================================================
+SUNUM İÇİN ANLATIM NOTU (rapora da yazılabilir)
+================================================================================
+
+"Proje, ASP.NET Web Forms ile geliştirilmiş bir saat e-ticaret demosudur.
+Gerçek ödeme entegrasyonu ve internet güvenliği bilinçli olarak
+devre dışı bırakılmıştır; amaç yerel ortamda iş akışını göstermektir.
+Kullanıcı ürünleri inceler, sepete ekler ve son ödeme adımında Kapıda Ödeme,
+EFT veya Kredi Kartı seçerek (tümü simülasyon) sipariş oluşturur. Sistem, kullanıcının ilgilendiği markalara göre basit bir
+öneri algoritması ile 'Size Öneriyoruz' bölümünü günceller.
+Yönetim panelinden ürün ve sipariş yönetimi yapılabilir."
+
+
+================================================================================
+NOTLAR
+================================================================================
+
+- Tema: Hazirlik/Tasarim/mirora/
+- Veritabanı: admin_saat (uzak SQL — üniversite PC'sinden erişim gerekir)
+- Notlar.txt: customErrors Off, IncelemeSayisi, BlogDetay, hover bug
+- PayTrIframeService / ReCaptcha dosyaları projede kalabilir — KULLANILMAZ
+- EncodingHelper: Türkçe karakter bozulmasın diye yeni sayfalarda kullan
+- SON ÖDEME (OdemeOde.aspx): Kapıda Ödeme, EFT, Kredi Kartı seçenekleri — tamamı FAKE;
+  gerçek banka/kart/EFT entegrasyonu yok; seçilen yöntem Siparis kaydına yazılır ve
+  teşekkür sayfasında gösterilir (üniversite demosu için yeterli)
+
+================================================================================

@@ -1,0 +1,7 @@
+﻿<customErrors mode="Off" /> yaparak kurulum yapabildim.
+
+Default içinde rptEnCokGoruntulenen  veritabanına urun kısmını drop and create yapamadım bu yüzden IncelemeSayisi Eklenmesi lazım
+
+Ana sayfada bulunan En Çok Görüntülenen Ürünler üzerine gelince resimi gidiyor.
+
+blogdetay sayfasında kaldım.

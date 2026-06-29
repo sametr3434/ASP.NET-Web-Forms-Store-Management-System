@@ -1,0 +1,317 @@
+ürün detay sayfasında renk seçimi olunca bir yuvarlak geliyor.(tuhaf duruyor)
+Arama kısmı çalışmıyor belki kaldırılabilir.
+
+
+
+[x] Ürünlerde renk eklemesi yok → Renk/kasa seed + varyant; Urunler listesinde renk swatch; UrunDetay renk seçimi iyileştirildi
+
+[x] Saatlere girince altta 3 saat öneriyor her saate girince azalıyor 3 tane bitince hepsi gidiyor.
+    → OneriMotoru: gezilen ürünleri hariç tutma kaldırıldı; sadece açık ürün hariç; varyant stok dahil; vitrin yedek.
+
+[x] Anasayfa da size öneriyoruz kısmı direkt yok.
+    → Aynı OneriMotoru düzeltmesi + pnlOneriler (boşsa gizle)
+
+[x] Yukarı gitme çubuğu aktif çalışmıyor.
+    → Buton form dışına alındı; bağımsız scroll script; is-visible + z-index; mobil dokunmatik hedef
+
+[x] sipariş sonuna gelince sipariş onayla kısmında sipariş onaylanmıyor.
+    → SiparisDetay INSERT: Beden → UrunCapi (canlı şema); VeritabaniKurulum migrasyon; OdemeOde oturum/hata iyileştirme
+
+[x] Arama çubuğunda ürün aranmıyor
+    → MasterPage GET /urunler?q=; Urunler.aspx ürün adı + marka LIKE filtresi; arama özeti
+
+
+YENİ NOTLAR (güncel):
+  [x] UrunDuzenle — Satış Bilgileri sekmesi/butonu kaldırıldı (SiparisDetay şeması uyumsuzdu)
+  [x] MusteriDetay — Detay tıklanınca hata: ParaBirimi kolonu okunmuyor → sorgular N'TRY sabit + try/catch
+
+================================================================================
+ACİL İŞ LİSTESİ — ÖNCELİKLİ YAPILACAKLAR
+Son güncelleme: 13.06.2026
+Canlı test: http://saat.tuzlatest.com/
+================================================================================
+
+ÖNERİLEN SIRA: 1 → 2 → 3 (DB/admin) → 4 → 5 → 6 (ön yüz) → 7 → 8 (cilalar)
+
+
+--- ÖNCELİK 1: VERİTABANI / ADMİN (canlı sitede kırık) ---
+
+[x] 1. UrunDuzenle.aspx — Invalid column name 'KasaId'
+    [x] VeritabaniKurulum: BedenId → KasaId migrasyonu (sp_rename veya ADD)
+    [x] UrunVaryant.aspx.cs kasaboyutu/KasaId ile hizalandı
+    [x] KasaBoyutuSil.aspx.cs KasaId kullanıyor
+    [x] Satış özeti: SiparisDetay.Beden/Renk (KasaId kolonu yok)
+
+[x] 2. MusteriDetay.aspx — 'ParaBirimi' sütunu salt okunur
+    [x] SepetHelper / SiparisHelper INSERT'lerden ParaBirimi yazımı kaldırıldı
+    [x] OdemeGecmisiniGetir try/catch ile güvenli hale getirildi
+
+[x] 3. Urun.IncelemeSayisi — canlı DB'de kolon eksik
+    [x] VeritabaniKurulum + DemoSql.sql migrasyon mevcut (F5 / app start)
+    [ ] Canlı sunucuda bir kez publish + app pool recycle sonrası doğrula
+
+
+--- ÖNCELİK 2: ÖN YÜZ ÜRÜN DENEYİMİ (sunumda görünür) ---
+
+[x] 4. /urundetay — renk + kasa çapı seçimi
+    [x] ddlKasa + ddlRenk, stok/fiyat farkı, SepetHelper varyantId
+
+[x] 5. Ürün fotoğrafları — admin ↔ ön yüz bağlantısı
+    [x] UrunDetay: UrunResim galeri + thumbnail tıklama
+
+[x] 6. Ana sayfa — En Çok Görüntülenen hover'da resim kayboluyor
+    [x] UrunResim'den IkinciResim; yoksa single-image CSS
+
+
+--- ÖNCELİK 3: BLOG + GENEL KALİTE ---
+
+[x] 7. BlogDetay — tamamlandı
+    [x] Bulunamayan blog → /blog yönlendirme
+    [x] İlgili yazılar Duzelt + Resim kolon adı düzeltildi
+    [x] using/dispose iyileştirmesi
+
+[x] 8. Ön yüz Türkçe metin denetimi
+    [x] MasterPage yorumlu bülten popup metinleri Türkçeleştirildi
+    [x] Ziyaretçi sayfaları zaten Türkçe (newsletter, arama, formlar)
+
+
+--- TAMAMLANAN / BİLGİ ---
+
+[x] customErrors mode="Off" — kurulum/publish için geçici çözüm (bilinçli)
+[x] Publish FCKeditor dialog.sides.gif hatası — skin görselleri eklendi, publish geçiyor
+
+
+--- DOSYA REFERANSI (hızlı) ---
+
+  KasaId      → UrunDuzenle.aspx.cs, VeritabaniKurulum.cs, KasaBoyutuSil.aspx.cs
+  ParaBirimi  → SepetHelper.cs, SiparisHelper.cs, MusteriDetay.aspx.cs
+  IncelemeSayisi → VeritabaniKurulum.cs, Hazirlik/DemoSql.sql, Default.aspx.cs
+  UrunDetay varyant → UrunDetay.aspx, .cs, .designer.cs
+  Galeri      → UrunDetay.aspx.cs, Default.aspx
+  BlogDetay   → BlogDetay.aspx, .cs
+
+
+================================================================================
+SAAT E-TİCARET — ÜNİVERSİTE PROJE PLANI (HIZLI & BASİT)
+Son güncelleme: 13.06.2026
+Amaç: Localhost'ta çalışan demo; internete yayın YOK; üniversiteye teslim
+================================================================================
+
+PROJE KAPSAMI (Ne teslim edilecek?)
+-----------------------------------
+Online saat mağazası demosu:
+  · Ziyaretçi / üye: ürün gezer → sepete ekler → sahte ödeme → "sipariş tamamlandı"
+  · Üyelik: giriş, kayıt, hesabım, geçmiş siparişler, çoklu adres
+  · Admin (Saat0604): ürün/sipariş yönetimi (büyük ölçüde hazır — sadece doğrulama)
+  · Ek özellik: basit "Size Öneriyoruz" (marka puanına göre öneri)
+  · Kurumsal sayfalar: ana sayfa, blog, hakkımızda, iletişim
+
+Teknik: ASP.NET Web Forms 4.8 + ADO.NET + SQL Server + Mirora teması
+Çalıştırma: Visual Studio → Rebuild → F5 / IIS Express
+  · HTTP:  http://localhost:61529/
+  · HTTPS: https://localhost:44317/
+
+
+================================================================================
+DEVRE DIŞI / YAPILMAYACAK (bilinçli olarak atlanıyor)
+================================================================================
+
+  ✗ PayTR / gerçek ödeme / PayTRCallback
+  ✗ ReCaptcha (iletişim formu doğrudan kayıt)
+  ✗ HTTPS zorunluluğu, SSL, connection string şifreleme
+  ✗ KVKK / çerez onay popup
+  ✗ Canlı IIS yayını, domain, firewall
+  ✗ Kurumsal statik sayfalar (teslimat, gizlilik, misyon, vizyon, kampanya, SSS…)
+  ✗ Misafir sipariş takip sayfası
+  ✗ Para birimi (USD/EUR) — sadece TL
+  ✗ Favori / wishlist
+  ✗ SEO meta, Google Analytics, yorum sistemi
+  ✗ DataTable.js ağır filtreler — Repeater yeterli
+  ✗ 404 özel sayfa (customErrors Off — hata görünsün)
+  ✗ Mobil responsive detay testi
+  ✗ Urunler marka dropdown filtresi (opsiyonel — atlandı)
+
+
+================================================================================
+MEVCUT DURUM — ÖZET
+================================================================================
+
+TAMAMLANAN FAZLAR:
+  [✓] Faz 1 — altyapı (route, MasterPage, VeritabaniKurulum)
+  [✓] Faz 2 — Urunler, UrunDetay
+  [✓] Faz 3 — Sepet, Odeme, OdemeOde, OdemeBasarili, SiparisHelper
+  [✓] Faz 4 — IlgiTakipHelper, OneriMotoru, "Size Öneriyoruz"
+  [✓] Faz 5 — BlogDetay, Default, İletişim, MasterPage UI cilası
+  [✓] Faz 6 — üyelik, demo seed, çoklu adres (MusteriAdres)
+
+SIRADAKI ADIM (buradan devam):
+  → Faz 8: Ön yüz uçtan uca sunum provası (misafir + üye senaryoları)
+  → Faz 7: Admin ekranları doğrulama (SiparisListe — sunum günü)
+
+DEMO HESAP:
+  · Kullanıcı adı: demo
+  · Şifre: demo
+  · 2 kayıtlı adres (Ev / İş) + 2 geçmiş sipariş (seed)
+
+
+================================================================================
+FAZ 1 — MINIMUM ALTYAPI [✓]
+================================================================================
+
+1.1 MasterPage
+  [✓] Statik tema linkleri → /sepet, /urunler, /uye-giris vb.
+  [✓] Footer, menü, logo, sosyal ikonlar, © Batıkan Narlı 2026
+  [✓] Giriş/Kayıt veya giriş yapılmışsa Hesabım menüsü
+
+1.2 Global.asax route'ları
+  [✓] /urunler, /urundetay/{id}/{baslik}
+  [✓] /sepet, /odeme, /odeme-ode, /odeme-basarili
+  [✓] /uye-giris, /uye-kayit, /uye-cikis, /hesabim
+  [✓] /blog, /blogdetay/{id}/{baslik}, /hakkimizda, /iletisim
+
+1.3 Web.config
+  [✓] customErrors mode="Off"
+
+1.4 VeritabaniKurulum.cs (Application_Start — F5 yeterli, manuel SQL YOK)
+  [✓] Urun.IncelemeSayisi kolonu
+  [✓] UrunIlgiLog tablosu
+  [✓] Musteri.KullaniciAdi kolonu
+  [✓] MusteriAdres tablosu (çoklu teslimat adresi)
+  [✓] Demo kullanıcı (demo/demo) + 2 örnek sipariş + Ev/İş adresleri
+
+Not: Helper dosyaları Code/ klasöründe (App_Code → CS0433 önlemi)
+
+
+================================================================================
+FAZ 2 — ÜRÜN GEZİNTİSİ [✓]
+================================================================================
+
+2.1 Urunler.aspx
+  [✓] Repeater, resim, marka, ad, fiyat (TL), UrunDetay linki
+  [—] Marka dropdown filtresi (opsiyonel — yapılmadı)
+
+2.2 UrunDetay.aspx
+  [✓] Ürün bilgisi, sepete ekle, IncelemeSayisi +1, IlgiTakipHelper
+
+
+================================================================================
+FAZ 3 — SEPET & SAHTE ÖDEME [✓] — ANA AKIŞ
+================================================================================
+
+3.1 Sepet.aspx — listele, adet güncelle, sil, ödemeye geç
+3.2 Odeme.aspx — teslimat formu, sepet özeti, üye adres seçimi (Faz 6.2)
+3.3 OdemeOde.aspx — Kapıda / EFT / Kart (hepsi fake) → SiparisHelper
+3.4 OdemeBasarili.aspx — teşekkür + sipariş no + yöntem mesajı
+3.5 SiparisHelper.cs — SahteOdemeTamamla, admin SiparisListe'de görünür
+
+
+================================================================================
+FAZ 4 — ÖNERİ SİSTEMİ [✓]
+================================================================================
+
+  [✓] UrunIlgiLog (görüntüleme=1, sepet=3, satın alma=5)
+  [✓] Default "Size Öneriyoruz", UrunDetay alt öneri (4 ürün)
+
+
+================================================================================
+FAZ 5 — SAYFA CİLASI [✓]
+================================================================================
+
+  [✓] BlogDetay, Default hover/link, İletişim form → gelenler
+  [✓] Ön yüz İngilizce temizliği
+
+
+================================================================================
+FAZ 6 — ÜYELİK & ADRES [✓] (13.06.2026)
+================================================================================
+
+6.1 Üyelik
+  [✓] UyeGiris.aspx — kullanıcı adı veya e-posta + şifre
+  [✓] UyeKayit.aspx — MusteriAuth.Kayit (KullaniciAdi opsiyonel)
+  [✓] UyeCikis.aspx — oturum + beni hatırla temizle
+  [✓] Hesabim.aspx — profil, sipariş geçmişi (Repeater)
+  [✓] SepetHelper.MisafirSepetiMerge (giriş sonrası)
+  [✓] MusteriAuth — PBKDF2, beni hatırla cookie
+
+6.2 Çoklu adres (MusteriAdresHelper.cs)
+  [✓] MusteriAdres tablosu + otomatik kurulum
+  [✓] Hesabim → Adreslerim: listele, ekle, sil, varsayılan yap
+  [✓] Odeme.aspx → kayıtlı adres dropdown + yeni adres + deftere kaydet
+  [✓] Demo: Ev (Kadıköy, varsayılan) + İş (Beşiktaş)
+  [✓] Eski tek adres Musteri tablosundan otomatik taşınır (AnaAdrestenOlustur)
+
+
+================================================================================
+FAZ 7 — ADMIN DOĞRULAMA (sunum günü) [ ]
+================================================================================
+
+Kod yazmaya gerek yok — çalıştığından emin ol:
+  [ ] Saat0604/Anasayfa — admin giriş
+  [ ] UrunListe / UrunEkle
+  [ ] SiparisListe — sahte ödeme sonrası yeni sipariş görünsün
+  [ ] SiparisDetay — ödeme durumu / müşteri bilgisi
+  [ ] Slider, Blog (içerik varsa)
+
+
+================================================================================
+FAZ 8 — SUNUM PROVASI [devam] ← ŞİMDİ BURADASIN
+================================================================================
+
+Ön koşul:
+  [✓] Rebuild Solution (13.06.2026)
+  [ ] F5 — sunum günü IIS Express yeniden başlat (önerilir)
+
+Sunum provası sırasında düzeltilen kritik hatalar (13.06.2026):
+  [✓] SQL connection pool timeout — BaglantiBilgileri IDisposable + helper'larda using
+  [✓] SiparisDetay.UrunId NULL hatası — SiparisHelper + demo seed düzeltildi
+
+Senaryo A — Misafir alışveriş:
+  [✓] Sepet → ödeme → onay → /odeme-basarili (otomatik test OK)
+  [ ] Ana sayfa slider (elle tarayıcı)
+  [ ] Admin SiparisListe'de yeni sipariş (Faz 7)
+
+Senaryo B — Üye alışveriş:
+  [✓] demo/demo giriş + /hesabim (sipariş + Ev/İş adres)
+  [✓] /odeme kayıtlı adres dropdown + otomatik doldurma
+  [ ] Üye ile sipariş tamamlama (elle tarayıcı — otomatik test kısmen OK)
+
+Senaryo C — Öneri (bonus):
+  [ ] 2-3 marka gez → "Size Öneriyoruz" değişimi
+
+
+================================================================================
+ÖNCELİK SIRASI
+================================================================================
+
+  1. [✓] Faz 1-6  — mağaza + üyelik + adres (kod tamam)
+  2. [ ] Faz 8    — ön yüz sunum provası (kritik akış test edildi, admin+F5 kaldı)
+  3. [ ] Faz 7    — admin doğrulama (sunum günü)
+
+
+================================================================================
+SUNUM ANLATIM NOTU (rapora yazılabilir)
+================================================================================
+
+"ASP.NET Web Forms ile geliştirilmiş saat e-ticaret demosudur. Gerçek ödeme
+ve canlı yayın güvenliği bilinçli devre dışıdır. Kullanıcı ürünleri inceler,
+sepete ekler; misafir veya üye olarak Kapıda Ödeme, EFT veya Kredi Kartı
+(seçenekler simülasyon) ile sipariş oluşturur. Üyeler birden fazla teslimat
+adresi kaydedebilir ve ödeme sırasında seçebilir. Sistem, ilgi loglarına göre
+'Size Öneriyoruz' bölümünü günceller. Yönetim panelinden ürün ve sipariş
+yönetimi yapılır."
+
+
+================================================================================
+DOSYA / TEKNİK NOTLAR
+================================================================================
+
+- Tema referans: Hazirlik/Tasarim/mirora/
+- Veritabanı: Web.config connection string (TuzlaTasarim)
+- Helper: Code/ — Baglanti (IDisposable), SepetHelper, SiparisHelper, MusteriAuth,
+  MusteriAdresHelper, IlgiTakipHelper, OneriMotoru, VeritabaniKurulum
+- SiparisDetay INSERT: UrunId zorunlu — SiparisHelper buna göre güncellendi
+- Notlar.txt: customErrors, Türkçe UI, encoding kuralları
+- Encoding: UTF-8 with BOM; EncodingHelper.DuzeltTurkce UI için
+- PayTrIframeService / ReCaptcha projede kalır — KULLANILMAZ
+
+================================================================================

@@ -1,0 +1,327 @@
+================================================================================
+                    SAAT E-TİCARET PROJESİ — SUNUM METNİ
+              (Üniversite jürisi / hoca sunumu için hazırlanmıştır)
+                         Hazırlayan: Batıkan Narlı — 2026
+================================================================================
+
+
+GİRİŞ
+─────
+
+Sayın hocalarım,
+
+Elinizdeki proje, ASP.NET Web Forms teknolojisi ile geliştirilmiş, yerel
+ortamda (localhost) çalışan bir online saat mağazası demonstrasyonudur. Projenin
+temel amacı, gerçek bir e-ticaret sitesinin ziyaretçi tarafındaki alışveriş
+deneyimini, üyelik ve sipariş yönetimini, ayrıca yönetim paneli üzerinden
+içerik ve sipariş takibini bütüncül biçimde göstermektir.
+
+Canlı internet yayını, gerçek ödeme entegrasyonu ve kurumsal güvenlik katmanları
+bilinçli olarak devre dışı bırakılmıştır; zira projenin odağı, üniversite
+ortamında iş akışını güvenli ve kontrollü şekilde canlandırmaktır. Bu tercih,
+rapor ve sunumda açıkça belirtilmiş olup bir eksiklik değil, kapsam
+sınırlamasıdır.
+
+
+PROJENİN KAPSAMI VE HEDEFİ
+─────────────────────────
+
+Proje şu ana işlevleri bir arada sunar:
+
+  · Ziyaretçi veya kayıtlı üyenin ürünleri incelemesi, sepete eklemesi ve
+    simüle edilmiş ödeme adımlarıyla sipariş oluşturması
+  · Üye girişi, kayıt, hesap yönetimi, geçmiş siparişler ve birden fazla
+    teslimat adresi tanımlama
+  · Kullanıcının ilgilendiği markalara göre ana sayfada kişiselleştirilmiş
+    ürün önerisi ("Size Öneriyoruz")
+  · Yönetim panelinden ürün, sipariş, müşteri, blog, slider ve site ayarlarının
+    yönetimi
+  · Kurumsal içerik sayfaları: hakkımızda, blog, iletişim
+
+Sunum sırasında izlenecek ana hikâye şudur: "Bir müşteri siteye girer, saat
+seçer, sepete ekler, teslimat bilgilerini girer, ödeme yöntemini seçer,
+siparişini tamamlar; ardından yönetici panelinde bu siparişin kayıt altına
+alındığı görülür." İsteğe bağlı olarak üye girişi ve çoklu adres seçimi de
+gösterilebilir.
+
+
+KULLANILAN TEKNOLOJİLER
+───────────────────────
+
+  · Platform     : ASP.NET Web Forms 4.8 (.NET Framework)
+  · Veritabanı   : Microsoft SQL Server (ADO.NET — SqlConnection, SqlCommand)
+  · Arayüz teması: Mirora e-ticaret teması (Hazirlik/Tasarim/mirora/)
+  · Sunucu     : IIS Express / Visual Studio F5 (localhost)
+  · Kimlik doğrulama: Oturum (Session) + isteğe bağlı "Beni hatırla" çerezi
+  · Şifreleme  : PBKDF2 tabanlı hash (MusteriAuth helper)
+
+Entity Framework kullanılmamıştır; veritabanı erişimi doğrudan ADO.NET ile
+yapılmaktadır. Bu tercih, projenin veri katmanını şeffaf tutmak ve SQL
+sorgularının raporlanmasını kolaylaştırmak içindir.
+
+
+MİMARİ YAPI — GENEL BAKIŞ
+─────────────────────────
+
+Proje iki ana bölümden oluşur:
+
+  1. ÖN YÜZ (ziyaretçi mağazası)
+     MasterPage.Master ortak şablon; tüm sayfalar bu şablonu kullanır.
+     Code/ klasöründeki helper sınıfları iş mantığını taşır.
+
+  2. YÖNETİM PANELİ (Saat0604/)
+     Admin kullanıcıları için ayrı arayüz; ürün, sipariş, müşteri ve içerik
+     yönetimi buradan yapılır.
+
+Veritabanı şeması uygulama ilk açılışında VeritabaniKurulum.cs aracılığıyla
+otomatik hazırlanır (UrunIlgiLog tablosu, IncelemeSayisi kolonu, MusteriAdres
+tablosu, demo kullanıcı ve örnek veriler). Manuel SQL script çalıştırmaya
+gerek yoktur; Visual Studio'da Rebuild ardından F5 yeterlidir.
+
+Helper dosyaları (Code/ klasörü):
+  · Baglanti.cs          — Veritabanı bağlantısı (IDisposable, Web.config)
+  · SepetHelper.cs       — Sepet ekleme, güncelleme, misafir-üye birleştirme
+  · SiparisHelper.cs     — Sahte ödeme sonrası sipariş kaydı
+  · MusteriAuth.cs       — Üye giriş, kayıt, oturum, beni hatırla
+  · MusteriAdresHelper.cs— Çoklu teslimat adresi yönetimi
+  · IlgiTakipHelper.cs   — Görüntüleme, sepet, satın alma logları
+  · OneriMotoru.cs       — Marka puanına göre ürün önerisi
+  · VeritabaniKurulum.cs — Otomatik tablo/kolon/demo veri kurulumu
+  · EncodingHelper.cs    — Türkçe karakter düzeltme
+
+
+ÖN YÜZ SAYFALARI VE GÖREVLERİ
+─────────────────────────────
+
+── Ana Sayfa (Default.aspx) ──
+  Ziyaretçinin karşılaştığı vitrin sayfasıdır. Slider alanı, öne çıkan
+  ürünler, "En Çok Görüntülenen Ürünler" bandı, "Size Öneriyoruz" öneri
+  bölümü ve blog özetleri burada yer alır. Öneri bandı, kullanıcının site
+  içinde gezdiği ürünlerin markalarına göre dinamik olarak güncellenir.
+
+── Ürünler (Urunler.aspx — /urunler) ──
+  Aktif ve stokta olan tüm saatler Repeater kontrolü ile listelenir.
+  Her kartta ürün resmi, marka adı, fiyat (TL) ve detay sayfasına link
+  bulunur. GridView kullanılmamıştır; proje standardı Repeater'dır.
+
+── Ürün Detay (UrunDetay.aspx — /urundetay/{id}/{baslik}) ──
+  Seçilen ürünün ayrıntılı bilgileri, ana görsel ve "Sepete Ekle" butonu
+  bu sayfada sunulur. Sayfa açıldığında IncelemeSayisi bir artırılır ve
+  IlgiTakipHelper ile görüntüleme olayı loglanır; bu veriler öneri motoruna
+  girdi sağlar. Sayfa altında aynı markadan veya vitrin ürünlerinden dört
+  adet öneri gösterilir.
+
+── Sepet (Sepet.aspx — /sepet) ──
+  SepetHelper üzerinden oturum veya üye kimliğine bağlı sepet satırları
+  listelenir. Kullanıcı adet güncelleyebilir, satır silebilir ve "Ödemeye
+  Geç" ile teslimat adımına yönlendirilir. Misafir sepeti çerez tabanlı
+  oturum kimliği ile korunur; üye girişinde sepet otomatik birleştirilir.
+
+── Teslimat / Ödeme Bilgileri (Odeme.aspx — /odeme) ──
+  Ad, soyad, telefon, e-posta, adres, il, ilçe ve posta kodu alınır.
+  Kayıtlı üye ise kayıtlı adreslerinden birini açılır listeden seçebilir;
+  varsayılan adres forma otomatik dolar. Yeni adres girilirken isteğe
+  bağlı olarak adres defterine kaydedilebilir.
+
+── Son Ödeme (OdemeOde.aspx — /odeme-ode) ──
+  Sipariş tutarı özeti ve üç simüle ödeme seçeneği sunulur:
+    · Kapıda Ödeme
+    · EFT / Havale
+    · Kredi Kartı
+  Kapıda ödeme bilgilendirme metni; EFT için demo IBAN; kredi kartı için
+  sahte kart alanları yalnızca görsel amaçlıdır — gerçek banka veya PayTR
+  entegrasyonu yoktur. "Siparişi Onayla" tıklandığında SiparisHelper
+  devreye girer: Siparis ve SiparisDetay tablolarına kayıt yazılır, sepet
+  temizlenir, satın alma ilgi loguna işlenir.
+
+── Sipariş Tamamlandı (OdemeBasarili.aspx — /odeme-basarili) ──
+  Teşekkür mesajı, sipariş numarası ve seçilen ödeme yöntemine göre kısa
+  bilgilendirme metni gösterilir. Ana sayfaya dönüş linki bulunur.
+
+── Üye Girişi (UyeGiris.aspx — /uye-giris) ──
+  Kullanıcı adı veya e-posta ile giriş yapılır. Demo hesap: kullanıcı adı
+  "demo", şifre "demo". "Beni hatırla" seçeneği 30 günlük güvenli çerez
+  oluşturur.
+
+── Üye Kayıt (UyeKayit.aspx — /uye-kayit) ──
+  Yeni müşteri kaydı; ad, soyad, e-posta, isteğe bağlı kullanıcı adı,
+  telefon ve şifre alınır. Şifre PBKDF2 ile hashlenerek veritabanına yazılır.
+
+── Hesabım (Hesabim.aspx — /hesabim) ──
+  Giriş zorunludur. Üye profil özeti, geçmiş siparişler tablosu (sipariş
+  no, tarih, ürünler, tutar, ödeme ve durum) ve "Adreslerim" bölümü yer
+  alır. Adresler eklenebilir, silinebilir, varsayılan adres atanabilir.
+
+── Üye Çıkış (UyeCikis.aspx — /uye-cikis) ──
+  Oturum sonlandırılır, beni hatırla çerezi temizlenir, ana sayfaya
+  yönlendirilir.
+
+── Blog (Blog.aspx — /blog) ──
+  Blog yazıları listelenir.
+
+── Blog Detay (BlogDetay.aspx — /blogdetay/{id}/{baslik}) ──
+  Seçilen yazının tam metni, görseli ve ilgili diğer yazılar gösterilir.
+
+── Hakkımızda (Hakkimizda.aspx — /hakkimizda) ──
+  Kurumsal tanıtım içeriği.
+
+── İletişim (Iletisim.aspx — /iletisim) ──
+  İletişim formu; gönderilen mesajlar veritabanındaki gelenler tablosuna
+  kaydedilir.
+
+
+ALİŞVERİŞ AKIŞI — ADIM ADIM
+────────────────────────────
+
+  1. Ziyaretçi ana sayfaya veya ürünler sayfasına girer.
+  2. Bir ürün detayına tıklar; inceleme sayacı ve ilgi logu güncellenir.
+  3. "Sepete Ekle" ile ürün sepete eklenir (stok kontrolü yapılır).
+  4. Sepet sayfasında adet kontrol edilir, "Ödemeye Geç" denir.
+  5. Teslimat bilgileri doldurulur (üye ise kayıtlı adres seçilebilir).
+  6. Son ödeme sayfasında yöntem seçilir ve sipariş onaylanır.
+  7. Teşekkür sayfasında sipariş numarası görüntülenir.
+  8. (Sunumda) Yönetim panelinde SiparisListe ekranında aynı sipariş
+     gösterilir — sistemin uçtan uca çalıştığının kanıtıdır.
+
+
+ÜYELİK VE ÇOKLU ADRES SİSTEMİ
+─────────────────────────────
+
+Misafir kullanıcı çerez tabanlı oturum kimliği ile alışveriş yapabilir;
+üye olmadan da sipariş tamamlanabilir. Üye girişinde misafir sepeti üye
+hesabına birleştirilir (SepetHelper.MisafirSepetiMerge).
+
+MusteriAdres tablosu sayesinde bir üyenin birden fazla teslimat adresi
+(Ev, İş vb.) tanımlanabilir. Ödeme adımında kayıtlı adreslerden biri
+seçilerek form otomatik doldurulur. Demo kullanıcıda Kadıköy'deki "Ev"
+adresi varsayılan, Beşiktaş'taki "İş" adresi ikinci kayıt olarak seed
+edilmiştir.
+
+
+ÖNERİ SİSTEMİ ("Size Öneriyoruz")
+──────────────────────────────────
+
+Basit ama raporlanabilir bir kişiselleştirme algoritması uygulanmıştır.
+UrunIlgiLog tablosunda kullanıcının (oturum veya üye kimliği ile) ürün
+üzerindeki eylemleri puanlanır:
+
+  · Görüntüleme  → 1 puan
+  · Sepete ekleme → 3 puan
+  · Satın alma   → 5 puan
+
+Son 30 günün loglarından en yüksek puanı toplayan marka belirlenir; aynı
+markadan ürünler öneri bandında listelenir. Yeterli veri yoksa vitrin
+ürünleri gösterilir. Gerçek yapay zeka veya harici API kullanılmamıştır;
+ancak sunumda "ilgi tabanlı öneri mantığı" olarak anlatılabilir.
+
+
+YÖNETİM PANELİ (Saat0604/)
+──────────────────────────
+
+Admin tarafı ön yüzden ayrı bir klasörde konumlanmıştır. Sunumda özellikle
+gösterilmesi önerilen ekranlar:
+
+  · Anasayfa.aspx      — Admin girişi
+  · UrunListe.aspx     — Ürün listesi
+  · UrunEkle.aspx      — Yeni ürün ekleme
+  · SiparisListe.aspx  — Tüm siparişler (sahte ödeme sonrası yeni kayıt)
+  · SiparisDetay.aspx  — Sipariş detayı, ödeme durumu, müşteri bilgisi
+  · MusteriListe.aspx  — Kayıtlı müşteriler
+  · Slider.aspx        — Ana sayfa slider yönetimi
+  · Blog.aspx          — Blog içerik yönetimi
+  · SiteSabitleri.aspx — Site başlığı, logo vb.
+
+Ön yüzden verilen bir siparişin admin panelinde anında görünmesi, projenin
+bütünlüğünü kanıtlayan en etkili sunum anıdır.
+
+
+VERİTABANI — ÖNEMLİ TABLOLAR
+─────────────────────────────
+
+  · Urun, Marka, Kategori     — Ürün kataloğu
+  · Sepet                     — Aktif sepet satırları (oturum / üye)
+  · Siparis, SiparisDetay     — Tamamlanan siparişler
+  · Musteri                   — Üye bilgileri, hash'lenmiş şifre
+  · MusteriAdres              — Üye teslimat adresleri (çoklu)
+  · UrunIlgiLog               — Öneri sistemi için ilgi kayıtları
+  · sitesabitleri, iletisim   — Site genel ayarları
+  · gelenler                  — İletişim formu mesajları
+
+
+BİLİNÇLİ OLARAK YAPILMAYANLAR
+─────────────────────────────
+
+Sunum veya jüri sorusu gelirse aşağıdakilerin kapsam dışı olduğu belirtilmelidir:
+
+  · PayTR / gerçek kredi kartı tahsilatı
+  · Canlı domain, HTTPS, SSL sertifikası, firewall
+  · KVKK çerez onay popup'ı
+  · Misafir sipariş takip sayfası (sipariş no ile sorgulama)
+  · Favori listesi, çoklu para birimi (USD/EUR)
+  · Google Analytics, SEO meta optimizasyonu
+  · Entity Framework
+
+Bu maddeler eksiklik değil; üniversite demosu kapsamında bilinçli tercihtir.
+
+
+SUNUM AKIŞI ÖNERİSİ (15–20 dakika)
+──────────────────────────────────
+
+  1. Giriş (1 dk)
+     Projenin amacı, teknoloji seçimi, kapsam sınırları.
+
+  2. Ana sayfa ve vitrin (2 dk)
+     Slider, ürünler, "Size Öneriyoruz" bandından bahset.
+
+  3. Alışveriş demonstrasyonu (5 dk)
+     Ürün detay → sepete ekle → sepet → teslimat → ödeme yöntemi seç →
+     sipariş tamamlandı ekranı.
+
+  4. Üyelik demonstrasyonu (3 dk)
+     demo/demo ile giriş → Hesabım → geçmiş siparişler → adresler →
+     ödeme sayfasında adres seçimi.
+
+  5. Yönetim paneli (3 dk)
+     SiparisListe'de az önce oluşan siparişi göster; SiparisDetay aç.
+
+  6. Öneri sistemi (2 dk)
+     Birkaç farklı marka ürün gez, ana sayfaya dön, bandın değişimini anlat.
+
+  7. Kapanış (1 dk)
+     Teknoloji özeti, bilinçli kapsam dışı maddeler, teşekkür.
+
+
+DEMO HESAP BİLGİLERİ
+────────────────────
+
+  Ön yüz üye girişi:
+    Kullanıcı adı : demo
+    Şifre         : demo
+
+  (Admin giriş bilgileri SiteSabitleri / AdminTanim kayıtlarından alınır.)
+
+
+ÇALIŞTIRMA
+──────────
+
+  Visual Studio → Solution'a sağ tık → Rebuild Solution → F5
+  Tarayıcı: http://localhost:61529/
+
+  VeritabaniKurulum Application_Start'ta otomatik çalışır; ek script gerekmez.
+
+
+KAPANIŞ
+───────
+
+Bu proje, klasik üç katmanlı web uygulaması mantığını (sunum katmanı,
+iş mantığı helper'ları, veri erişim katmanı) somut bir e-ticaret senaryosu
+üzerinden göstermeyi hedefler. Gerçek ödeme ve canlı yayın olmadan da
+ürün gezintisi, sepet, simüle checkout, üyelik, çoklu adres, ilgi tabanlı
+öneri ve admin sipariş yönetimi bütünleşik biçimde çalışır durumdadır.
+
+Sunum sırasında sorularınızı memnuniyetle yanıtlarım.
+
+Saygılarımla,
+Batıkan Narlı — 2026
+
+================================================================================

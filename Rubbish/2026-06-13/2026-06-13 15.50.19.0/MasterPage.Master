@@ -1,0 +1,509 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterPage.master.cs" Inherits="Saat.MasterPage" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="meta description">
+    <!-- Favicons -->
+    <link rel="shortcut icon" href="/assets/img/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/assets/img/icon.png">
+
+    <!-- Title -->
+    <title>Mirora - Watch & Luxury Store Bootstrap 5 Template</title>
+
+    <!-- ************************* CSS Files ************************* -->
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.css">
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+
+    <!-- Elegent Icon CSS -->
+    <link rel="stylesheet" href="/assets/css/elegent-icons.css">
+
+    <!-- All Plugins CSS css -->
+    <link rel="stylesheet" href="/assets/css/plugins.css">
+
+    <!-- style css -->
+    <link rel="stylesheet" href="/assets/css/main.css">
+
+    <style>
+        /* Saat — üst bar logo ve sosyal medya */
+        .header-middle {
+            padding: 0.65rem 0;
+        }
+
+        .saat-logo-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0;
+        }
+
+        .saat-logo-link {
+            display: inline-block;
+            line-height: 0;
+        }
+
+        .saat-logo {
+            display: block;
+            max-height: 52px;
+            width: auto;
+            max-width: 240px;
+            height: auto;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .header-top .social.saat-header-social {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0 0 0.6rem 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        @media (min-width: 992px) {
+            .header-top .social.saat-header-social {
+                margin-bottom: 0;
+                margin-right: 1.25rem;
+            }
+        }
+
+        .header-top .social.saat-header-social .social__item {
+            margin: 0 !important;
+            line-height: 1;
+        }
+
+        .header-top .social.saat-header-social .social__link {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #353535;
+            color: #b8b8b8;
+            font-size: 14px;
+            line-height: 1;
+            text-decoration: none;
+            transition: color 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
+        }
+
+        .header-top .social.saat-header-social .social__link:hover {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .header-top .social.saat-header-social .social__link.facebook:hover { background-color: #1877f2; }
+        .header-top .social.saat-header-social .social__link.twitter:hover { background-color: #1da1f2; }
+        .header-top .social.saat-header-social .social__link.linkedin:hover { background-color: #0a66c2; }
+        .header-top .social.saat-header-social .social__link.instagram:hover {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .header-top .header-text {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 575px) {
+            .saat-logo {
+                max-height: 44px;
+                max-width: 200px;
+            }
+
+            .header-top .social.saat-header-social .social__link {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+            }
+        }
+    </style>
+
+    <!-- modernizr JS
+    ============================================ -->
+    <script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="//oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+
+<body>
+    <form id="form1" runat="server">
+        <div>
+             <!-- Main Wrapper Start -->
+ <div class="wrapper bg--shaft">
+     <!-- Header Area Start -->
+     <header class="header headery-style-1">
+         <div class="header-top header-top-1">
+             <div class="container">
+                 <div class="row no-gutters align-items-center">
+                     <div class="col-lg-8 d-flex align-items-center flex-column flex-lg-row">
+                         <ul class="social social-round saat-header-social mr--20">
+
+                             <li class="social__item">
+                                 <asp:Literal ID="ltrTwitter" runat="server"></asp:Literal>                                
+                             </li>
+                             <li class="social__item">
+
+                                 <asp:Literal ID="ltrFacebook" runat="server"></asp:Literal>                                
+                             </li>
+                          
+                             <li class="social__item">
+                                 <asp:Literal ID="ltrLinkedin" runat="server"></asp:Literal>                                
+
+                             </li>
+                             <li class="social__item">
+                                 <asp:Literal ID="ltrInstagram" runat="server"></asp:Literal>                                
+
+                             </li>
+                         </ul>
+                         <p class="header-text">Tüm Saatlerde İndirim Kazanmak İçin–  <span>“<asp:Literal ID="ltrKuponadi" runat="server"></asp:Literal>”</span>Kupon Kodunu Kullanın. </p>
+                     </div>
+                     <div class="col-lg-4">
+                         <div class="header-top-nav d-flex justify-content-lg-end justify-content-center">
+
+                           
+                             <div class="user-info header-top-nav__item d-none">
+                                 <div class="dropdown header-top__dropdown">
+                                     <a class="dropdown-toggle" id="userID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                         Hesabım
+                                         <i class="fa fa-angle-down"></i>
+                                     </a>
+                                     <div class="dropdown-menu" aria-labelledby="userID">
+                                         <a class="dropdown-item" href="/urunler">Ürünler</a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         <div class="header-middle header-top-1">
+             <div class="container">
+                 <div class="row no-gutters align-items-center">
+                     <div class="col-md-5 col-sm-6 order-lg-1 order-2">
+                         <div class="contact-info">
+                             <img src="/assets/img/icons/icon_phone.png" alt="Phone Icon">
+                             <p>Arayın <br> Ücretsiz Destek Olalım <asp:Literal ID="ltrTelefon1" runat="server"></asp:Literal></p>
+                         </div>
+                     </div>
+                     <div class="col-lg-2 col-12 order-lg-2 order-1 text-center saat-logo-wrap">
+                         <asp:Literal ID="ltrLogo" runat="server"></asp:Literal>
+                     </div>
+                     <div class="col-lg-5 col-md-7 col-sm-6 order-lg-3 order-3">
+                         <div class="header-toolbar">
+                             <div class="search-form-wrapper search-hide">
+                                 <div action="#" class="search-form">
+                                     <input type="text" name="search" id="search" class="search-form__input" placeholder="Search entire store here..">
+                                     <button type="submit" class="search-form__submit">
+                                         <i class="icon_search"></i>
+                                     </button>
+                                 </div>
+                             </div>
+                             <ul class="header-toolbar-icons">
+                                 <li class="search-box">
+                                     <a href="#" class="bordered-icon search-btn" aria-expanded="false"><i class="icon_search"></i></a>
+                                 </li>
+                                 <li class="mini-cart-icon">
+                                     <asp:Literal ID="ltrMiniSepet" runat="server"></asp:Literal>
+                                 </li>
+                             </ul>
+                         </div>
+                     </div>  
+                 </div>
+             </div>
+         </div>
+                 <div class="header-bottom header-top-1 position-relative navigation-wrap fixed-header">
+                     <div class="container position-static">
+                         <div class="row">
+                             <div class="col-12 position-static text-center">
+                                 <nav class="main-navigation">
+                                     <ul class="mainmenu">
+                                         <li class="mainmenu__item active">
+                                             <a href="/anasayfa" class="mainmenu__link">Ana Sayfa</a>
+
+                                         </li>
+                                         <li class="mainmenu__item menu-item-has-children has-children">
+                                             <a href="/urunler" class="mainmenu__link">Ürünlerimiz</a>
+
+                                             <ul class="sub-menu">
+                                                 <asp:Repeater ID="rptUrunListele" runat="server">
+                                                     <ItemTemplate>
+                                                         <li>
+                                                             <a href='<%# UrunLink(Eval("ID"), Eval("UrunAdi")) %>'>
+                                                                 <%# Eval("UrunAdi") %>
+                                                             </a>
+                                                         </li>
+                                                     </ItemTemplate>
+                                                 </asp:Repeater>
+                                                 
+                                             </ul>
+</li>                        
+                                 <li class="mainmenu__item ">
+                                     <a href="/blog" class="mainmenu__link">Blog</a>
+
+                                 </li>
+                                 
+                                 <li class="mainmenu__item">
+                                     <a href="/hakkimizda" class="mainmenu__link">Hakkımızda</a>
+                                 </li>
+                                 <li class="mainmenu__item">
+                                     <a href="/iletisim" class="mainmenu__link">İletişim</a>
+                                 </li>
+                             </ul>
+                         </nav>
+                     </div>
+                 </div>
+                 <div class="row no-gutters">
+                     <div class="col-12">
+                         <div class="mobile-menu"></div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </header>
+     <!-- Header Area End -->            
+     <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+            </asp:ContentPlaceHolder> 
+
+        </div>
+      <!-- Footer Start -->
+<footer class="footer border-top ptb--40 ptb-md--30">
+    <div class="container">
+
+        <div class="row mb--40 mb-md--30">
+
+            <div class="col-lg-4 col-md-6 mb-md--30">
+                <div class="footer-widget">
+
+                    <h3 class="widget-title">TimePro Hakkında</h3>
+
+                    <div class="widget-content mb--20">
+                        <p>
+                            Zamanın değerini bilenler için kaliteli ve şık saatleri bir araya getiriyoruz.
+                            Güvenli alışveriş, hızlı teslimat ve müşteri memnuniyeti odaklı hizmet anlayışımızla
+                            her anınıza değer katıyoruz.
+                        </p>
+
+
+                    </div>
+
+                    <ul class="social social-round">
+                        <li class="social__item">
+                            <asp:Literal ID="ltrTwitter2" runat="server"></asp:Literal>
+                        </li>
+                        <li class="social__item">
+                            <asp:Literal ID="ltrFacebook2" runat="server"></asp:Literal>
+                        </li>
+                        <li class="social__item">
+                            <asp:Literal ID="ltrLinkedin2" runat="server"></asp:Literal>
+                        </li>
+                        <li class="social__item">
+                            <asp:Literal ID="ltrInstagram2" runat="server"></asp:Literal>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-md--30">
+                <div class="footer-widget">
+                    <h3 class="widget-title">Kurumsal</h3>
+
+                    <ul class="widget-menu">
+                        <li><a href="/hakkimizda">Hakkımızda</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-md--30">
+                <div class="footer-widget">
+                    <h3 class="widget-title">Müşteri Hizmetleri</h3>
+
+                    <ul class="widget-menu">
+                        <li><a href="/urunler">Ürünlerimiz</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <div class="footer-widget">
+                    <h3 class="widget-title">Güvenli Alışveriş</h3>
+
+                    <div class="widget-content">
+                        <p>Adres: <asp:Literal ID="ltrAdres" runat="server"></asp:Literal></p>
+                        <p>Telefon 1: <asp:Literal ID="ltrTelefon11" runat="server"></asp:Literal></p>
+                        <p>Telefon 2: <asp:Literal ID="ltrTelefon22" runat="server"></asp:Literal></p>
+                        <p>Mail Adresi: <asp:Literal ID="ltrMailAdresi" runat="server"></asp:Literal></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mb--40 mb-md--30">
+            <div class="col-12">
+                <ul class="footer-menu">
+                    <li><a href="/anasayfa">Anasayfa</a></li>
+                    <li><a href="/urunler">Ürünlerimiz</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/iletisim">İletişim</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="copyright-text">
+                    &copy; TimePro 2026. Tüm hakları saklıdır.
+                </p>
+
+                <img src="/assets/img/others/payment.png" alt="Ödeme Yöntemleri">
+            </div>
+        </div>
+
+    </div>
+</footer>
+    <!-- Footer End -->
+
+    <!-- Scroll To Top Start -->    
+    <a class="scroll-to-top" href="#"><i class="fa fa-angle-double-up"></i></a>
+    <!-- Scroll To Top End -->
+
+    <!-- Popup Subscribe Box Start -->
+    <!-- <div class="popup-subscribe-box" id="subscribe-popup">
+        <div class="popup-subscribe-box-content">
+            <div class="popup-subscribe-box-body">
+                <a href="#subscribe-popup" class="popup-close">close</a>
+                <h3>NEWSLETTER</h3>
+                <p>Subscribe to our newsletters now and stay up-to-date with new collections, the latest lookbooks and exclusive offers.</p>
+                <form class="popup-subscribe-form validate" action="" method="post">
+                    <input type="email" name="popup-subscribe-email" id="popup-subscribe-email" placeholder="Enter your email here...">
+                    <input type="submit" value="Subscribe" class="btn subscribe-btn btn-medium btn-style-1">
+                    <div class="form-group text-center mt--20">
+                        <input type="checkbox" name="hide-popup" id="hide-popup">
+                        <label for="hide-popup"> Don't show this popup again </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div> -->
+    <!-- Popup Subscribe Box End -->
+
+    <!-- Modal Start -->
+    <div class="modal fade product-modal" id="productModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-body">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">Close</span>
+            </button>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-5 col-md-6 mb-sm--20">
+                        <div class="tab-content product-thumb-large">
+                            <div id="thumb1" class="tab-pane active show fade">
+                                <img src="/assets/img/products/1-1-600x600.jpg" alt="product thumb">
+                            </div>
+                            <div id="thumb2" class="tab-pane fade">
+                                <img src="/assets/img/products/2-600x600.jpg" alt="product thumb">
+                            </div>
+                            <div id="thumb3" class="tab-pane fade">
+                                <img src="/assets/img/products/10-600x600.jpg" alt="product thumb">
+                            </div>
+                            <div id="thumb4" class="tab-pane fade">
+                                <img src="/assets/img/products/11-600x600.jpg" alt="product thumb">
+                            </div>
+                            <div id="thumb5" class="tab-pane fade">
+                                <img src="/assets/img/products/12-600x600.jpg" alt="product thumb">
+                            </div>
+                            <div id="thumb6" class="tab-pane fade">
+                                <img src="/assets/img/products/13-600x600.jpg" alt="product thumb">
+                            </div>
+                        </div>
+                        <div class="product-thumbnail">
+                            <div class="thumb-menu" id="modal-thumbmenu">
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb1" data-bs-toggle="tab" class="nav-link active">
+                                        <img src="/assets/img/products/1-1-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb2" data-bs-toggle="tab" class="nav-link">
+                                        <img src="/assets/img/products/2-2-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb3" data-bs-toggle="tab" class="nav-link">
+                                        <img src="/assets/img/products/10-10-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb4" data-bs-toggle="tab" class="nav-link">
+                                        <img src="/assets/img/products/11-11-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb5" data-bs-toggle="tab" class="nav-link">
+                                        <img src="/assets/img/products/12-12-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                                <div class="thumb-menu-item">
+                                    <a href="#thumb6" data-bs-toggle="tab" class="nav-link">
+                                        <img src="/assets/img/products/13-13-450x450.jpg" alt="product thumb">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal End -->
+
+</div>
+<!-- Main Wrapper End -->
+
+
+<!-- ************************* JS Files ************************* -->
+
+<!-- jQuery JS -->
+<script src="/assets/js/vendor/jquery.min.js"></script>
+
+<!-- Bootstrap and Popper Bundle JS -->
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+
+<!-- All Plugins Js -->
+<script src="/assets/js/plugins.js"></script>
+<!-- Ajax Mail Js -->
+<script src="/assets/js/ajax-mail.js"></script>
+
+<!-- Main JS -->
+<script src="/assets/js/main.js"></script>
+
+    </form>
+</body>
+</html>

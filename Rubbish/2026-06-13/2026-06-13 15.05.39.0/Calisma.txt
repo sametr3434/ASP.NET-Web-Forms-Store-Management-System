@@ -1,0 +1,328 @@
+================================================================================
+SAAT E-TİCARET PROJESİ — YAPILACAKLAR LİSTESİ
+Tarih: 13.06.2026
+Kaynak: Proje incelemesi + Notlar.txt
+================================================================================
+
+PROJE ÖZETİ (Anladığım yapı)
+----------------------------
+- ASP.NET Web Forms 4.8, ADO.NET (SqlConnection/SqlCommand), Entity Framework YOK
+- Tema: Mirora (Hazirlik/Tasarim/mirora/*.html referans)
+- Veritabanı: admin_saat (uzak SQL Server — Web.config + Baglanti.cs)
+- Ön yüz: Kök dizinde MasterPage.Master ile sayfalar
+- Admin panel: Saat0604/ altında (ürün, sipariş, müşteri, kupon, slider, blog vb. — büyük ölçüde hazır)
+- App_Code: SepetHelper, MusteriAuth, PayTrIframeService, PayTrCallbackIsleyici,
+  UrunSeoSlug, UrunFiyatlari, ParaBirimiHelper, EncodingHelper, MagazaYardimcisi,
+  ReCaptcha, CacheHelper (backend mantığı yazılmış; ön yüz sayfaları henüz yok)
+- YENİ HEDEF: Kişiselleştirilmiş saat tavsiye sistemi — üye veya misafir kullanıcının
+  ilgilendiği saatleri (marka, kategori, renk, kasa boyutu, fiyat vb.) takip edip
+  "Size öneriyoruz" mantığında akıllı ürün önerisi sunmak (Faz 9)
+- Routing: Global.asax içinde kısmi route tanımları var.
+  Routing/RouteConfig.cs daha kapsamlı ama Global.asax tarafından ÇAĞRILMIYOR (çift/uyumsuz yapı)
+- Derleme: Başarılı (MSBuild). IIS Express: http://localhost:61529 / https://localhost:44317
+
+MEVCUT ÖN YÜZ SAYFALARI (var, çalışıyor)
+-----------------------------------------
+[✓] Default.aspx          → /anasayfa
+[✓] Blog.aspx             → /blog
+[~] BlogDetay.aspx         → /blogdetay/{id}/{baslik}  (kısmen tamam — Notlar.txt: burada kalındı)
+[✓] Hakkimizda.aspx       → /hakkimizda
+[✓] Iletisim.aspx         → /iletisim
+
+EKSİK ÖN YÜZ SAYFALARI (route/link var, dosya yok)
+---------------------------------------------------
+RouteConfig.cs + Global.asax + MasterPage linklerinden:
+
+Ürün & alışveriş:
+[ ] Urunler.aspx           → /urunler  (MasterPage'de /Urunlerimiz yazıyor — uyumsuz!)
+[ ] UrunDetay.aspx         → /urun/{id}/{slug}, /urundetay/{id}/{baslik}
+[ ] Sepet.aspx             → /sepet
+[ ] Odeme.aspx             → /odeme
+[ ] OdemeOde.aspx          → /odeme-ode
+[ ] OdemeBasarili.aspx     → /odeme-basarili
+[ ] OdemeBasarisiz.aspx    → /odeme-basarisiz
+[ ] ParaBirimi.aspx        → /para-birimi
+
+Üyelik:
+[ ] UyeGiris.aspx          → /uye-giris
+[ ] UyeKayit.aspx          → /uye-kayit
+[ ] UyeCikis.aspx          → /uye-cikis
+[ ] Hesabim.aspx           → /hesabim
+[ ] SiparisDetayim.aspx    → /siparisim/{id}
+
+Ödeme bildirimi:
+[ ] PayTRCallback.aspx     → /paytr-bildirim
+[ ] PayTR_Callback.aspx      → /paytr-callback
+
+Kurumsal / statik içerik:
+[ ] TeslimatBilgileri.aspx   → /teslimatbilgileri
+[ ] GizlilikPolitikasi.aspx  → /gizlilikpolitikasi
+[ ] Misyon.aspx              → /misyon
+[ ] Vizyon.aspx              → /vizyon
+[ ] Kampanyalar.aspx         → /kampanyalar
+[ ] KullanimKosullari.aspx   → /kullanimkosullari
+[ ] SiparisTakip.aspx        → /siparistakip
+[ ] 404.aspx                 → Web.config hata yönlendirmesi (şu an 404 veriyor)
+
+MasterPage footer'da route tanımsız linkler:
+[ ] İade ve Değişim          → /iadevedegisim (sayfa + route yok)
+[ ] SSS                      → /sss (sayfa + route yok)
+[ ] Sipariş Takibi           → footer /siparistakibi, Global.asax /siparistakip (URL uyumsuz)
+
+RouteConfig vs mevcut dosya çakışması:
+[ ] RouteConfig MagazaHakkimizda.aspx / MagazaIletisim.aspx bekliyor;
+    projede Hakkimizda.aspx / Iletisim.aspx var — isimlendirme veya route birleştirme kararı gerekli
+
+
+================================================================================
+FAZ 0 — ALTYAPI & TEMİZLİK (Önce bunlar)
+================================================================================
+
+Adım 0.1 — Routing birleştirme
+  - Global.asax içindeki RegisterRoutes ile Routing/RouteConfig.cs tek kaynakta birleştirilsin
+  - RouteConfig.RegisterRoutes(RouteTable.Routes) çağrılsın
+  - Blog route'ları (blog, blogdetay) RouteConfig'e eklenmeli (şu an sadece Global.asax'ta)
+  - Kurumsal sayfa route'ları (teslimat, gizlilik, misyon, vizyon, kampanya, kullanım koşulları,
+    sipariş takip) RouteConfig'e eklenmeli
+  - MasterPage.Master içindeki tüm href'ler bu route'larla uyumlu hale getirilsin
+    (/Urunlerimiz → /urunler, /siparistakibi → /siparistakip vb.)
+
+Adım 0.2 — Baglanti.cs düzeltmesi
+  - Hardcoded connection string kaldırılsın
+  - Web.config connectionStrings["TuzlaTasarim"] kullanılsın (ConfigurationManager)
+
+Adım 0.3 — 404.aspx oluştur
+  - Hazirlik/Tasarim/mirora/404.html referans alınarak
+  - Web.config customErrors yönlendirmesi çalışır hale gelsin
+
+Adım 0.4 — MasterPage.Master dinamikleştirme
+  - Statik HTML linkler kaldırılsın: cart.html, checkout.html, login-register.html,
+    wishlist.html, compare.html, product-details.html
+  - Mini sepet dummy içeriği → SepetHelper ile gerçek sepet verisi
+  - Üst menü: giriş yapmışsa Hesabım/Çıkış, değilse Giriş/Kayıt
+  - Para birimi seçici (ParaBirimiHelper) varsa header'a bağlansın
+  - EncodingHelper.DuzeltTurkce: DB'den gelen tüm metinler için Duzelt() wrapper eklensin
+
+Adım 0.5 — Türkçe karakter & encoding
+  - Tüm yeni/düzenlenen .aspx, .cs, .designer.cs dosyaları UTF-8 with BOM
+  - Ön yüz sayfalarında EncodingHelper kullanımı (admin panelde var, ön yüzde yok)
+
+
+================================================================================
+FAZ 1 — VERİTABANI
+================================================================================
+
+Adım 1.1 — Urun tablosu: IncelemeSayisi kolonu (Notlar.txt)
+  - ALTER TABLE Urun ADD IncelemeSayisi INT NOT NULL DEFAULT 0
+  - Mevcut kayıtlara varsayılan 0
+  - UrunDetay açıldığında IncelemeSayisi +1 (opsiyonel ama mantıklı)
+
+Adım 1.2 — Tablo şema kontrolü (tahmin etmeden önce INFORMATION_SCHEMA ile bak)
+  - Sepet, Musteri, Siparis, SiparisDetay, UrunVaryant, Kupon tabloları
+  - App_Code helper'ların beklediği kolonlar ile DB uyumu doğrulansın
+  - sitesabitleri: PayTR_MagazaNo, Parola, GizliAnahtar alanları (PayTrIframeService)
+
+Adım 1.3 — Blog tablosu
+  - GoogleAnahtar, GoogleAciklama kolonları BlogDetay SEO için kullanılacak
+  - Yorum tablosu var mı kontrol (BlogDetay'da ltrYorumAdeti boş)
+
+
+================================================================================
+FAZ 2 — MEVCUT SAYFALARIN TAMAMLANMASI & BUG FIX
+================================================================================
+
+Adım 2.1 — Default.aspx (Ana Sayfa)
+  [BUG] En Çok Görüntülenen Ürünler (rptEnCokGoruntulenen): hover'da resim kayboluyor
+    - Sebep: Sadece primary-image var; Mirora teması hover'da secondary-image bekliyor
+    - Çözüm: CSS düzeltmesi ve/veya ikinci resim (UrunResim tablosundan) + hover overlay fix
+  [ ] EnCokTercihEdenler sorgusu: ORDER BY IncelemeSayisi DESC (kolon eklendikten sonra)
+  [ ] Vitrin, slider, blog repeater linkleri MagazaRouteUrls.UrunDetay ile üretilsin
+  [ ] Sepete ekle / hızlı görüntüle butonları statik cart.html yerine gerçek işlevlere bağlansın
+  [ ] Mail bülteni (gelenler tablosu) — çalışıyor, EncodingHelper eklenebilir
+
+Adım 2.2 — BlogDetay.aspx (Kaldığımız yer — Notlar.txt)
+  [ ] ltrResim HTML hatası: fazladan </a> kapanışı düzeltilsin
+  [ ] ltrYorumAdeti doldurulsun (yorum tablosu veya 0)
+  [ ] GoogleAnahtar / GoogleAciklama → meta keywords/description
+  [ ] İlgili yazılar (rptBlogGetir): mevcut blog ID hariç tutulsun, link /blogdetay/{id}/{slug}
+  [ ] EncodingHelper ile Türkçe karakter düzeltmesi
+  [ ] aciklama alanı HTML içerik ise Literal'da doğru render (blockquote yerine uygun alan)
+  [ ] Breadcrumb: Ana Sayfa > Blog > {Başlık}
+
+Adım 2.3 — Blog.aspx
+  [ ] Liste linkleri /blogdetay/{id}/{slug} formatına geçsin
+  [ ] EncodingHelper, sayfalama (çok yazı varsa)
+
+Adım 2.4 — Hakkimizda.aspx & Iletisim.aspx
+  [ ] Admin panelden (Saat0604) gelen içeriklerle senkron mu kontrol
+  [ ] Iletisim formu: ReCaptcha entegrasyonu (App_Code/ReCaptcha.cs hazır)
+  [ ] Form gönderimi → gelenler veya iletisim tablosu
+
+
+================================================================================
+FAZ 3 — ÜRÜN KATALOĞU (E-ticaret çekirdeği)
+================================================================================
+
+Referans HTML: Hazirlik/Tasarim/mirora/shop.html, shop-list.html, product-details.html
+
+Adım 3.1 — Urunler.aspx
+  [ ] .aspx + .aspx.cs + .designer.cs + csproj kaydı
+  [ ] Repeater + table (GridView YOK)
+  [ ] Filtre: kategori, marka, fiyat aralığı, sıralama
+  [ ] Kategori/marka dropdown: form-control select-search data-fouc
+  [ ] DataTable.js: benzersiz tablo ID (#urunlerTable)
+  [ ] Ürün kartı: resim, marka, ad, fiyat (UrunFiyatlari + ParaBirimiHelper)
+  [ ] SEO URL: MagazaRouteUrls.UrunDetay
+  [ ] Information modal (id="aciklamalar")
+
+Adım 3.2 — UrunDetay.aspx
+  [ ] Varyant seçimi: kasa boyutu, renk (UrunVaryant tablosu)
+  [ ] Stok kontrolü (SepetHelper.StokAl)
+  [ ] Sepete ekle (SepetHelper.Ekle)
+  [ ] IncelemeSayisi artır
+  [ ] Çoklu resim galerisi (UrunResim)
+  [ ] İlgili ürünler
+  [ ] Fiyat: UrunFiyatlari helper
+
+
+================================================================================
+FAZ 4 — SEPET & ÖDEME
+================================================================================
+
+Referans HTML: cart.html, checkout.html
+
+Adım 4.1 — Sepet.aspx
+  [ ] SepetHelper: listele, adet güncelle, sil
+  [ ] Kupon kodu uygulama
+  [ ] Para birimi gösterimi
+  [ ] Misafir / üye sepet birleştirme (SepetHelper + MusteriAuth)
+
+Adım 4.2 — Odeme.aspx
+  [ ] Teslimat / fatura adresi formu
+  [ ] Üye girişi yapmışsa adres otomatik doldur
+  [ ] Sipariş özeti
+
+Adım 4.3 — PayTR entegrasyonu
+  [ ] OdemeOde.aspx → PayTrIframeService.TokenAl → iframe
+  [ ] PayTRCallback.aspx / PayTR_Callback.aspx → PayTrCallbackIsleyici
+  [ ] OdemeBasarili.aspx / OdemeBasarisiz.aspx
+  [ ] sitesabitleri PayTR ayarları admin'den yönetiliyor mu kontrol
+
+Adım 4.4 — ParaBirimi.aspx
+  [ ] ParaBirimiHelper ile TRY/USD/EUR seçimi, session/cookie, geri dönüş URL
+
+
+================================================================================
+FAZ 5 — ÜYELİK & HESAP
+================================================================================
+
+Referans HTML: login-register.html, my-account.html
+
+Adım 5.1 — UyeKayit.aspx
+  [ ] MusteriAuth.KayitOl (PBKDF2 hash)
+  [ ] E-posta benzersizlik, validasyon
+
+Adım 5.2 — UyeGiris.aspx
+  [ ] MusteriAuth.GirisYap
+  [ ] Sepet birleştirme
+
+Adım 5.3 — UyeCikis.aspx
+  [ ] Oturum sonlandır, sepet koruma kararı
+
+Adım 5.4 — Hesabim.aspx
+  [ ] Profil düzenleme, şifre değiştir
+  [ ] Sipariş geçmişi listesi
+
+Adım 5.5 — SiparisDetayim.aspx
+  [ ] /siparisim/{id} — sipariş kalemleri, durum, kargo
+
+
+================================================================================
+FAZ 6 — KURUMSAL / STATİK SAYFALAR
+================================================================================
+
+Admin panel (Saat0604) veya sitesabitleri/veritabanı içerik kaynağı belirlenmeli.
+
+Adım 6.1 — Tek şablon veya ortak base ile:
+  [ ] TeslimatBilgileri.aspx
+  [ ] GizlilikPolitikasi.aspx
+  [ ] Misyon.aspx
+  [ ] Vizyon.aspx
+  [ ] Kampanyalar.aspx
+  [ ] KullanimKosullari.aspx
+  [ ] IadeVeDegisim.aspx  (+ route /iadevedegisim)
+  [ ] SSS.aspx            (+ route /sss)
+
+Adım 6.2 — SiparisTakip.aspx
+  [ ] Sipariş no + e-posta ile durum sorgulama (misafir takip)
+
+
+================================================================================
+FAZ 7 — ADMIN PANEL (Saat0604) — Kontrol & İyileştirme
+================================================================================
+
+Büyük ölçüde hazır; ön yüz tamamlanırken doğrulanacak:
+
+[ ] SiteSabitleri: PayTR, site başlığı, logo
+[ ] Slider, Blog, Hakkimizda, Iletisim yönetimi
+[ ] UrunEkle/Duzenle/Resim/Varyant/Sil
+[ ] Kategori, Marka, Renk, KasaBoyutu CRUD
+[ ] Kupon, SiparisListe/Detay/Etiket
+[ ] MusteriListe/Detay, Gelenler (mail bülteni)
+[ ] Admin giriş (Default.aspx / AdminTanim)
+[ ] Her yönetim sayfasında aciklamalar modal'ı var mı kontrol
+
+
+================================================================================
+FAZ 8 — TEST & YAYIN
+================================================================================
+
+Adım 8.1 — Fonksiyonel test
+  [ ] Ana sayfa → ürün listesi → detay → sepet → ödeme → PayTR test modu
+  [ ] Üye kayıt / giriş / sipariş geçmişi
+  [ ] Blog listesi / detay
+  [ ] İletişim formu + ReCaptcha
+  [ ] 404, hata sayfaları
+  [ ] Mobil responsive (@media, 44px dokunma alanı)
+
+Adım 8.2 — customErrors
+  [ ] Geliştirme: mode="Off" (Notlar.txt)
+  [ ] Canlı: mode="RemoteOnly" veya "On"
+
+Adım 8.3 — Güvenlik
+  [ ] Web.config connection string (canlıda şifreleme)
+  [ ] HTTPS zorunluluğu (httpCookies requireSSL)
+  [ ] PayTR callback hash doğrulama
+
+Adım 8.4 — IIS yayın
+  [ ] Application pool .NET 4.x, klasik/integrated pipeline uyumu
+  [ ] Upload klasörü yazma izni
+  [ ] Rebuild sonrası IIS recycle
+
+
+================================================================================
+ÖNCELİK SIRASI (Hızlı ayağa kaldırma için öneri)
+================================================================================
+
+  1. Faz 0 (routing + 404 + MasterPage linkleri)
+  2. Faz 1.1 (IncelemeSayisi kolonu)
+  3. Faz 2.2 (BlogDetay tamamlama — kaldığımız yer)
+  4. Faz 2.1 (Ana sayfa hover bug)
+  5. Faz 3 (Urunler + UrunDetay — site satışa açılabilir hale gelir)
+  6. Faz 4 (Sepet + Ödeme)
+  7. Faz 5 (Üyelik)
+  8. Faz 6 (Kurumsal sayfalar)
+  9. Faz 8 (Test & yayın)
+
+
+================================================================================
+NOTLAR
+================================================================================
+
+- Tema referansı: https://htmldemo.net/mirora/mirora/index.html (Hazirlik/Tasarim.txt)
+- Proje derleniyor; eksik olan ön yüz .aspx dosyaları ve entegrasyonlar
+- RouteConfig.cs + MagazaRouteUrls.cs başka projeden (AuramixCode) taşınmış görünüyor;
+  Global.asax ile entegre edilmeden e-ticaret URL'leri çalışmaz
+- Ön yüzde EncodingHelper henüz kullanılmıyor; admin panelde standart uygulanmış
+
+================================================================================

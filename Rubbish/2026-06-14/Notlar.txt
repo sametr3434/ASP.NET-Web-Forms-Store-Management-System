@@ -1,0 +1,13 @@
+﻿http://saat.tuzlatest.com/urundetay urun seçimnde renk ve kasa çapı olacak.
+MusteriDetay.aspx 'ParaBirimi' sütunu salt okunur. hatası olur
+UrunDuzenle.aspx  Invalid column name 'KasaId'. Invalid column name 'KasaId'.
+ürün fotoğrafları kısmı ön yüzle bağlantısı yok.
+<customErrors mode="Off" /> yaparak kurulum yapabildim.
+
+Default içinde rptEnCokGoruntulenen  veritabanına urun kısmını drop and create yapamadım bu yüzden IncelemeSayisi Eklenmesi lazım
+
+Ana sayfada bulunan En Çok Görüntülenen Ürünler üzerine gelince resimi gidiyor.
+
+blogdetay sayfasında kaldım.
+
+Ön yüz (MasterPage + ziyaretçi sayfaları): Tasarımdan gelen İngilizce metin kullanılmaz — placeholder, başlık, modal, sayfalama vb. hep Türkçe.
